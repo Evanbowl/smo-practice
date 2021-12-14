@@ -18,7 +18,7 @@ const char* stageNames[] = {"CapWorldHomeStage", "WaterfallWorldHomeStage", "San
 #endif
 
 
-#define NUM_PAGES 8
+#define NUM_PAGES 9
 #define NUM_STAGES 200
 
 #if(SMOVER==100)
@@ -80,12 +80,10 @@ void fl::PracticeUI::update(StageScene& stageScene)
 
     if (holdL && al::isPadTriggerRight(CONTROLLER_AUTO)) {inputEnabled = !inputEnabled; return;}
     else if
-    #if(SMOVER==130)
-    (holdL && al::isPadTriggerLeft(CONTROLLER_AUTO))
-    #endif
-    #if(SMOVER==100)
+    //#if(SMOVER==130)
+    //(holdL && al::isPadTriggerLeft(CONTROLLER_AUTO))
+    //#endif
     (al::isPadTriggerPressLeftStick(CONTROLLER_AUTO))
-    #endif
     showMenu = !showMenu;
 
     if (!showMenu)
@@ -127,7 +125,7 @@ void fl::PracticeUI::menu()
     {
         enum Page : u8
         {
-            About, Options, Stage, Misc, Info, MoonInfo, Modes, Debug
+            About, Options, Stage, Misc, Info, MoonInfo, Modes, CRC, Debug
         };
         static Page curPage = About;
         static u8 curLine = 0;
@@ -150,7 +148,8 @@ void fl::PracticeUI::menu()
                 else if (curPage == Misc) curPage = Info;
                 else if (curPage == Info) curPage = MoonInfo;
                 else if (curPage == MoonInfo) curPage = Modes;
-                else if (curPage == Modes) curPage = Debug;
+                else if (curPage == Modes) curPage = CRC;
+                else if (curPage == CRC) curPage = Debug;
                 else if (curPage == Debug) curPage = About;
             }
             if (al::isPadTriggerLeft(CONTROLLER_AUTO))
@@ -161,7 +160,8 @@ void fl::PracticeUI::menu()
                 else if (curPage == Info) curPage = Misc;
                 else if (curPage == MoonInfo) curPage = Info;
                 else if (curPage == Modes) curPage = MoonInfo;
-                else if (curPage == Debug) curPage = Modes;
+                else if (curPage == CRC) curPage = Modes;
+                else if (curPage == Debug) curPage = CRC;
                 else if (curPage == About) curPage = Debug;
             }
         }
@@ -344,6 +344,28 @@ void fl::PracticeUI::menu()
                 TOGGLE("isModeEpdMovieRom: %s\n", isModeEpdMovieRom, 6);
                 break;
             };
+            case CRC:
+            {
+                printf("CRC Setups\n");
+
+                MAX_LINE(4);
+                CURSOR(0);
+                CHANGE_PAGE();
+                
+                f32 capPosX = al::getTrans(player->mHackCap)->x;
+                f32 capPosY = al::getTrans(player->mHackCap)->y;
+                f32 capPosZ = al::getTrans(player->mHackCap)->z;
+                TRIGGER("GP x1\n", 1, al::setTrans(player->mHackCap, sead::Vector3f(capPosX, capPosY -= 2745.0, capPosZ)));
+                TRIGGER("GP x5\n", 2, al::setTrans(player->mHackCap, sead::Vector3f(capPosX, capPosY -= 2745.0 * 5.0, capPosZ)));
+                TRIGGER("GP x10\n", 3, al::setTrans(player->mHackCap, sead::Vector3f(capPosX, capPosY -= 2745.0 * 10.0, capPosZ)));
+                TOGGLE("P2 L/R as shake: %s\n\n", doCRC, 4);
+
+                printf("Sherm Skip S2W (45 gps)\n");
+                printf("Island 1 to 3 S2W (50 gps)\n");
+                printf("Island 3 to 4 S2W (39 gps)\n");
+                printf("Cappy Pos: X: %.3f, Y: %.3f, Z: %.3f\n", capPosX, capPosY, capPosZ);
+                break;
+            }
             case Debug:
             {
                 printf("Debug\n");

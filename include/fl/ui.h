@@ -52,6 +52,8 @@ public:
     bool isModeE3MovieRom = false;
     bool isModeEpdMovieRom = false;
     bool isModeJungleGymRom = false;
+
+    bool doCRC = false;
 };
 
 }

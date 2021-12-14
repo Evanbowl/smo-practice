@@ -5,6 +5,7 @@
 #include <fl/server.h>
 #include <nn/init.h>
 #include <mem.h>
+#include "al/input/JoyPadAccelPoseAnalyzer.h"
 
 void serverThreadFunc(void* args)
 {
@@ -25,6 +26,29 @@ void stageSceneControlHook() {
     __asm ("MOV %[result], X0" : [result] "=r" (stageScene));
     
     fl::PracticeUI::instance().update(*stageScene);
+
+    al::PlayerHolder *pHolder = al::getScenePlayerHolder(stageScene);
+    PlayerActorHakoniwa *player = al::tryGetPlayerActor(pHolder, 0);
+    HackCap *cap = player->mHackCap;
+    al::JoyPadAccelPoseAnalyzer *playerMotion = player->mPlayerInput->mJoyPadAccelPoseAnalyzer1;
+    al::JoyPadAccelPoseAnalyzer *capMotion = cap->mPlayerInput->mJoyPadAccelPoseAnalyzer2;
+
+//This is hacky but it works
+    if (fl::PracticeUI::instance().doCRC && al::isPadHoldL(2) || al::isPadHoldR(2))
+    {   
+    capMotion->mSwingLeft = true;
+    capMotion->mSwingRight = true;
+    capMotion->mSwingAny = true;
+    capMotion->mAccelCombinedVel = {0.0f, 1.0f};
+    capMotion->mAccelLeftAccel = {0.0f, 1.0f};
+    capMotion->mAccelRightAccel = {0.0f, 1.0f};
+    capMotion->mAccelLeftVel = {0.0f, 1.0f};
+    capMotion->mAccelRightVel = {0.0f, 1.0f};
+    capMotion->mHistoryLeft.hist0 = 1.4f;
+    capMotion->mHistoryRight.hist0 = 1.4f;
+    capMotion->mHistoryLeft.hist1 = 0.5f;
+    capMotion->mHistoryRight.hist1 = 0.5f;
+    }
 
     #if(SMOVER==100)
     static bool init = false;

@@ -26,4 +26,6 @@ class HackCap : public al::LiveActor {
         al::LiveActor *mActorA; // 0x118
         unsigned char padding_08[0x08];
         al::LiveActor *mPlayerActor; // 0x128
+        unsigned char padding_09[0x2C0 - 0x130];
+        PlayerInput *mPlayerInput;
 };
