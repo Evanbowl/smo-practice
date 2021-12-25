@@ -19,11 +19,28 @@ class GameDataFile
         void wearCap(char const *);
         void changeNextStage(ChangeStageInfo const*, int);
         void setGotShine(const ShineInfo*);
-        bool isGotShine(const ShineInfo*) const;
+        #if(SMOVER==100)
         PlayerHitPointData* getPlayerHitPointData() const;
+        bool isGotShine(const ShineInfo*) const;
+        #endif
+        #if(SMOVER==130)
+        CVEFUN(GameDataFile, 0x004C8530, PlayerHitPointData*, getPlayerHitPointData);
+        CEFUN(GameDataFile, 0x004C9880, bool, isGotShine, EFUN_ARGS(const ShineInfo* shineInfo), EFUN_ARGS(shineInfo));
+        #endif
 
+        #if SMOVER==100
         unsigned char padding_6A8[0x6A8];
         GameProgressData *mGameProgressData; // 0x6A8
-        undefined padding_9F0[0x340];
+        spad(gap, 0x340);
         int curWorldId;
+        #endif
+
+        #if SMOVER==130
+        unsigned char padding_6A8[0x6A8];
+        GameProgressData *mGameProgressData; // 0x6A8
+        undefined padding_9F0[0x1F0];
+        PlayerHitPointData* mPlayerHitPointData;
+        spad(gap, 0x148);
+        int curWorldId;
+        #endif
 };

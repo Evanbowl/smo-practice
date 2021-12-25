@@ -147,8 +147,11 @@ namespace al
 
     PlayerActorHakoniwa *tryGetPlayerActor(al::PlayerHolder const *, int);
 
+    int getMainControllerPort();
+    int getPadAccelerationDeviceNum(int);
+
     #if(SMOVER==100)
-    sead::Heap *getCurrentHeap(void);
+    sead::Heap* getCurrentHeap(void);
     #endif
     #if(SMOVER==130)
     EFUN(0x006A4550, sead::Heap*, getCurrentHeap, EFUN_ARGS(void));
@@ -181,14 +184,14 @@ namespace al
 
     #if(SMOVER==100)
     void setTrans(al::LiveActor *, sead::Vector3f const &);
+    void setGravity(al::LiveActor const *, sead::Vector3f const &);
     #endif
     #if(SMOVER==130)
     EFUN(0x0066D6D0, void, setTrans, EFUN_ARGS(const al::LiveActor* actor, const sead::Vector3f& trans));
+    EFUN(0x0066E050, void, setGravity, EFUN_ARGS(const al::LiveActor* actor, const sead::Vector3f& gravity));
     #endif
 
     void setScaleAll(al::LiveActor *, float);
-
-    void setGravity(al::LiveActor const *, sead::Vector3f const &);
 
     void setFront(al::LiveActor *, sead::Vector3f const &);
 

@@ -23,6 +23,7 @@ private:
 
     bool inputEnabled = true;
     bool hideShineCounter = false;
+    bool nextFrameNoLeftInput = false;
 
     #if(SMOVER==130)
     char textBuffer[4096];
@@ -41,6 +42,8 @@ public:
     void menu();
     #endif
 
+    inline StageScene* getStageScene() {return stageScene;}
+
     bool shineRefresh = false;
     bool gotShineRefresh = false;
     bool alwaysWarp = false;
@@ -52,8 +55,6 @@ public:
     bool isModeE3MovieRom = false;
     bool isModeEpdMovieRom = false;
     bool isModeJungleGymRom = false;
-
-    bool doCRC = false;
 };
 
 }

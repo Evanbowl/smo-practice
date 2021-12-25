@@ -1,23 +1,14 @@
+#include "al/input/JoyPadAccelPoseAnalyzer.h"
 #include "al/util.hpp"
+#include "fl/input.h"
+#include "fl/tas.h"
 #include "game/Layouts/MapLayout.h"
 #include "rs/util.hpp"
+#include "sead/math/seadVector.h"
 #include <fl/ui.h>
 #include <fl/server.h>
 #include <nn/init.h>
 #include <mem.h>
-#include "al/input/JoyPadAccelPoseAnalyzer.h"
-
-void serverThreadFunc(void* args)
-{
-    smo::Server* server = (smo::Server*) args;
-    nn::TimeSpan w = nn::TimeSpan::FromNanoSeconds(1000000);
-    while (true)
-    {
-        server->handlePacket();
-        nn::os::YieldThread();
-        nn::os::SleepThread(w);
-    }
-}
 
 void stageSceneControlHook() {
     __asm ("MOV X19, X0");
@@ -27,44 +18,6 @@ void stageSceneControlHook() {
     
     fl::PracticeUI::instance().update(*stageScene);
 
-    al::PlayerHolder *pHolder = al::getScenePlayerHolder(stageScene);
-    PlayerActorHakoniwa *player = al::tryGetPlayerActor(pHolder, 0);
-    HackCap *cap = player->mHackCap;
-    al::JoyPadAccelPoseAnalyzer *playerMotion = player->mPlayerInput->mJoyPadAccelPoseAnalyzer1;
-    al::JoyPadAccelPoseAnalyzer *capMotion = cap->mPlayerInput->mJoyPadAccelPoseAnalyzer2;
-
-//This is hacky but it works
-    if (fl::PracticeUI::instance().doCRC && al::isPadHoldL(2) || al::isPadHoldR(2))
-    {   
-    capMotion->mSwingLeft = true;
-    capMotion->mSwingRight = true;
-    capMotion->mSwingAny = true;
-    capMotion->mAccelCombinedVel = {0.0f, 1.0f};
-    capMotion->mAccelLeftAccel = {0.0f, 1.0f};
-    capMotion->mAccelRightAccel = {0.0f, 1.0f};
-    capMotion->mAccelLeftVel = {0.0f, 1.0f};
-    capMotion->mAccelRightVel = {0.0f, 1.0f};
-    capMotion->mHistoryLeft.hist0 = 1.4f;
-    capMotion->mHistoryRight.hist0 = 1.4f;
-    capMotion->mHistoryLeft.hist1 = 0.5f;
-    capMotion->mHistoryRight.hist1 = 0.5f;
-    }
-
-    #if(SMOVER==100)
-    static bool init = false;
-    if (!init)
-    {
-        smo::Server& server = smo::Server::instance();
-        nn::os::ThreadType* thread = (nn::os::ThreadType*) nn::init::GetAllocator()->Allocate(sizeof(nn::os::ThreadType));
-        const u32 stackSize = 0x5000;
-        void* threadStack = aligned_alloc(0x1000, stackSize);
-        nn::os::CreateThread(thread, serverThreadFunc, &server, threadStack, stackSize, 16, 0);
-        nn::os::SetThreadName(thread, "UDP Thread");
-        nn::os::StartThread(thread);
-        init = true;
-    }
-    #endif
-
     __asm ("MOV X0, %[input]" : [input] "=r" (stageScene));
 }
 
@@ -73,6 +26,11 @@ void setGotShineVar(GameDataHolderWriter writer, const ShineInfo* shineInfo)
     fl::PracticeUI& ui = fl::PracticeUI::instance();
     if (!ui.shineRefresh)
         writer.mGameDataFile->setGotShine(shineInfo);
+}
+
+int fgetPadAccelerationDeviceNum(int port)
+{
+    return fl::TasHolder::instance().isRunning ? 2 : al::getPadAccelerationDeviceNum(port);
 }
 
 bool isGotShineVar(GameDataHolderAccessor accessor, const ShineInfo* shineInfo)
@@ -92,7 +50,7 @@ bool isEnableSaveVar(StageScene* stageScene)
 
 bool isTriggerSnapShotModeVar(const al::IUseSceneObjHolder* objHolder)
 {
-    return showMenu ? false : rs::isTriggerSnapShotMode(objHolder);
+    return showMenu || fl::TasHolder::instance().isRunning ? false : rs::isTriggerSnapShotMode(objHolder);
 }
 
 bool isTriggerAmiiboModeVar(const al::IUseSceneObjHolder* objHolder)
@@ -128,4 +86,164 @@ bool fisModeE3MovieRom()
 bool fisModeEpdMovieRom()
 {
     return fl::PracticeUI::instance().isModeEpdMovieRom;
+}
+
+#if SMOVER==100
+bool fisPadTriggerLMotion(int port)
+{
+    return fl::TasHolder::instance().isRunning ? false : al::isPadTriggerL(port);
+}
+#endif
+
+void motionUpdate(al::JoyPadAccelPoseAnalyzer* dis)
+{
+    if (!fl::TasHolder::instance().isRunning) {dis->update(); return;}
+    fl::TasHolder& h = fl::TasHolder::instance();
+    int controllerPort;
+    if (dis->mControllerPort < 0)
+        controllerPort = al::getMainControllerPort();
+    else controllerPort = al::getPlayerControllerPort(dis->mControllerPort);
+    dis->mAccelDeviceNum = al::getPadAccelerationDeviceNum(controllerPort);
+
+    if (fisPadTriggerL(controllerPort))
+    {
+        if (h.oldMotion)
+        {
+            dis->mSwingLeft = false;
+            dis->mSwingRight = true;
+            dis->mSwingAny = true;
+            dis->mAccelRightAccel = {0.0f, 1.0f};
+            dis->mAccelRightVel = {0.0f, 1.0f};
+            dis->mHistoryRight.hist0 = 1.4f;
+            dis->mHistoryRight.hist1 = -0.5f;
+        }
+        else if (fisPadTriggerUp(controllerPort))
+        {
+            dis->mSwingLeft = false;
+            dis->mSwingRight = true;
+            dis->mSwingAny = true;
+            dis->mAccelRightAccel = {0.0f, 1.0f};
+            dis->mAccelRightVel = {0.0f, 1.0f};
+            dis->mHistoryRight.hist0 = 1.4f;
+            dis->mHistoryRight.hist1 = -0.5f;
+        }
+        else if (fisPadTriggerDown(controllerPort))
+        {
+            dis->mSwingLeft = false;
+            dis->mSwingRight = true;
+            dis->mSwingAny = true;
+            dis->mAccelRightAccel = {0.0f, -1.0f};
+            dis->mAccelRightVel = {0.0f, -1.0f};
+            dis->mHistoryRight.hist0 = 1.4f;
+            dis->mHistoryRight.hist1 = -0.5f;
+        }
+        else if (fisPadTriggerLeft(controllerPort))
+        {
+            dis->mSwingRight = false;
+            dis->mSwingLeft = true;
+            dis->mSwingAny = true;
+            dis->mAccelLeftAccel = {-1.0f, 0.0f};
+            dis->mAccelLeftVel = {-1.0f, 0.0f};
+            dis->mHistoryLeft.hist0 = 1.4f;
+            dis->mHistoryLeft.hist1 = -0.5f;
+        }
+        else if (fisPadTriggerRight(controllerPort))
+        {
+            dis->mSwingRight = true;
+            dis->mSwingLeft = false;
+            dis->mSwingAny = true;
+            dis->mAccelRightAccel = {1.0f, 0.0f};
+            dis->mAccelRightVel = {1.0f, 0.0f};
+            dis->mHistoryRight.hist0 = 1.4f;
+            dis->mHistoryRight.hist1 = -0.5f;
+        }
+        else
+        {
+            dis->mSwingLeft = false;
+            dis->mSwingRight = true;
+            dis->mSwingAny = true;
+            dis->mAccelRightAccel = {0.0f, 1.0f};
+            dis->mAccelRightVel = {0.0f, 1.0f};
+            dis->mHistoryRight.hist0 = 1.4f;
+            dis->mHistoryRight.hist1 = -0.5f;
+        }
+    }
+    else
+    {
+        if (fisPadTriggerUp(controllerPort))
+        {
+            dis->mSwingLeft = true;
+            dis->mSwingRight = true;
+            dis->mSwingAny = true;
+            dis->mAccelCombinedVel = {0.0f, 1.0f};
+            dis->mAccelLeftAccel = {0.0f, 1.0f};
+            dis->mAccelRightAccel = {0.0f, 1.0f};
+            dis->mAccelLeftVel = {0.0f, 1.0f};
+            dis->mAccelRightVel = {0.0f, 1.0f};
+            dis->mHistoryLeft.hist0 = 1.4f;
+            dis->mHistoryRight.hist0 = 1.4f;
+            dis->mHistoryLeft.hist1 = -0.5f;
+            dis->mHistoryRight.hist1 = -0.5f;
+        }
+        else if (fisPadTriggerLeft(controllerPort))
+        {
+            dis->mSwingLeft = true;
+            dis->mSwingRight = true;
+            dis->mSwingAny = true;
+            dis->mAccelCombinedVel = {-1.0f, 0.0f};
+            dis->mAccelLeftAccel = {-1.0f, 0.0f};
+            dis->mAccelRightAccel = {-1.0f, 0.0f};
+            dis->mAccelLeftVel = {-1.0f, 0.0f};
+            dis->mAccelRightVel = {-1.0f, 0.0f};
+            dis->mHistoryLeft.hist0 = 1.4f;
+            dis->mHistoryRight.hist0 = 1.4f;
+            dis->mHistoryLeft.hist1 = -0.5f;
+            dis->mHistoryRight.hist1 = -0.5f;
+        }
+        else if (fisPadTriggerRight(controllerPort))
+        {
+            dis->mSwingLeft = true;
+            dis->mSwingRight = true;
+            dis->mSwingAny = true;
+            dis->mAccelCombinedVel = {1.0f, 0.0f};
+            dis->mAccelLeftAccel = {1.0f, 0.0f};
+            dis->mAccelRightAccel = {1.0f, 0.0f};
+            dis->mAccelLeftVel = {1.0f, 0.0f};
+            dis->mAccelRightVel = {1.0f, 0.0f};
+            dis->mHistoryLeft.hist0 = 1.4f;
+            dis->mHistoryRight.hist0 = 1.4f;
+            dis->mHistoryLeft.hist1 = -0.5f;
+            dis->mHistoryRight.hist1 = -0.5f;
+        }
+        else if (fisPadTriggerDown(controllerPort))
+        {
+            dis->mSwingLeft = true;
+            dis->mSwingRight = true;
+            dis->mSwingAny = true;
+            dis->mAccelCombinedVel = {0.0f, -1.0f};
+            dis->mAccelLeftAccel = {0.0f, -1.0f};
+            dis->mAccelRightAccel = {0.0f, -1.0f};
+            dis->mAccelLeftVel = {0.0f, -1.0f};
+            dis->mAccelRightVel = {0.0f, -1.0f};
+            dis->mHistoryLeft.hist0 = 1.4f;
+            dis->mHistoryRight.hist0 = 1.4f;
+            dis->mHistoryLeft.hist1 = -0.5f;
+            dis->mHistoryRight.hist1 = -0.5f;
+        }
+        else
+        {
+            dis->mSwingLeft = false;
+            dis->mSwingRight = false;
+            dis->mSwingAny = false;
+            dis->mAccelCombinedVel = {0.0f, 0.0f};
+            dis->mAccelLeftAccel = {0.0f, 0.0f};
+            dis->mAccelRightAccel = {0.0f, 0.0f};
+            dis->mAccelLeftVel = {0.0f, 0.0f};
+            dis->mAccelRightVel = {0.0f, 0.0f};
+            dis->mHistoryLeft.hist0 = 0.0f;
+            dis->mHistoryRight.hist0 = 0.0f;
+            dis->mHistoryLeft.hist1 = 0.0f;
+            dis->mHistoryRight.hist1 = 0.0f;
+        }
+    }
 }
