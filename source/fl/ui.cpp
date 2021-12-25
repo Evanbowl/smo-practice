@@ -1,11 +1,13 @@
-#include "al/util.hpp"
+#include "al/LiveActor/LiveActor.h"
 #include "game/GameData/GameDataFunction.h"
 #include "rs/util.hpp"
 
 #include <fl/common.h>
+#include <fl/server.h>
+#include <fl/tas.h>
 #include <fl/ui.h>
 #include <fl/util.h>
-#include <fl/server.h>
+#include <str.h>
 
 const char* stageNames[] = {"CapWorldHomeStage", "WaterfallWorldHomeStage", "SandWorldHomeStage", "LakeWorldHomeStage", "ForestWorldHomeStage", "CloudWorldHomeStage", "ClashWorldHomeStage", "CityWorldHomeStage",
                             "SnowWorldHomeStage", "SeaWorldHomeStage", "LavaWorldHomeStage", "BossRaidWorldHomeStage", "SkyWorldHomeStage", "MoonWorldHomeStage", "PeachWorldHomeStage", "Special1WorldHomeStage", "Special2WorldHomeStage", "MoonWorldBasementStage", "MoonWorldKoopa1Stage", "MoonWorldKoopa2Stage", "DotTowerExStage", "Special2WorldLavaStage", "FrogSearchExStage", "Cube2DExStage", "SandWorldPyramid001Stage", "SeaWorldSecretStage", "CapAppearExStage", "ForestWorldWaterExStage", "PeachWorldShopStage", "SkyWorldTreasureStage", "SnowWorldRaceExStage", "PushBlockExStage", "ShootingCityYoshiExStage", "SnowWorldLobbyExStage", "DemoChangeWorldFindKoopaShipStage", "DonsukeExStage", "BullRunExStage", "DemoBossRaidAttackStage", "PeachWorldPictureGiantWanderBossStage", "CityWorldShop01Stage", "PackunPoisonNoCapExStage", "RevengeBossKnuckleStage", "SenobiTowerYoshiExStage", "SnowWorldShopStage", "Theater2DExStage", "LavaWorldBubbleLaneExStage", "DemoChangeWorldBossRaidAttackStage", "Special1WorldTowerStackerStage", "Special1WorldTowerFireBlowerStage", "SandWorldCostumeStage", "LavaWorldFenceLiftExStage", "ForestWorldBossStage", "BikeSteelExStage", "FastenerExStage", "SandWorldRotateExStage", "SeaWorldSneakingManStage", "TrexBikeExStage", "SnowWorldRaceHardExStage", "SandWorldPressExStage", "DemoCrashHomeStage", "WaterValleyExStage", "CapWorldTowerStage", "KillerRailCollisionExStage", "ByugoPuzzleExStage", "CityWorldFactoryStage", "Special2WorldKoopaStage", "SandWorldUnderground001Stage", "IceWaterBlockExStage", "PackunPoisonExStage", "DemoEndingStage", "DotHardExStage", "SenobiTowerExStage", "GabuzouClockExStage", "PeachWorldPictureBossMagmaStage", "ClashWorldShopStage", "SeaWorldCostumeStage", "DemoCrashHomeFallStage", "MoonWorldSphinxRoom", "SandWorldUnderground000Stage", "ShootingCityExStage", "PeachWorldPictureBossRaidStage", "RailCollisionExStage", "RevengeBossRaidStage", "LavaWorldTreasureStage", "Special2WorldCloudStage", "DemoWorldMoveForwardArriveStage", "MoonWorldWeddingRoomStage", "SeaWorldVibrationStage", "DemoWorldMoveMoonForwardStage", "ForestWorldWoodsTreasureStage", "ForestWorldWoodsStage", "ForestWorldCloudBonusExStage", "PeachWorldPictureMofumofuStage", "CapRotatePackunExStage", "GotogotonExStage", "IceWalkerExStage", "PeachWorldPictureBossKnuckleStage", "RevengeBossMagmaStage", "ForestWorldTowerStage", "DemoStartWorldWaterfallStage", "PeachWorldCastleStage", "SkyWorldCostumeStage", "DemoWorldMoveMoonForwardFirstStage", "SkyWorldShopStage", "SnowWorldTownStage", "DemoLavaWorldScenario1EndStage", "RevengeGiantWanderBossStage", "SandWorldSphinxExStage", "DemoWorldMoveMoonBackwardStage", "SnowWorldRace000Stage", "SnowWorldCostumeStage", "BikeSteelNoCapExStage", "CapAppearLavaLiftExStage", "DemoHackKoopaStage", "RadioControlExStage", "TrexPoppunExStage", "TsukkunClimbExStage", "LavaWorldShopStage", "SandWorldSecretStage", "FukuwaraiKuriboStage", "ForkExStage", "JangoExStage", "DemoOpeningStage", "LakeWorldShopStage", "PoleGrabCeilExStage", "PoisonWaveExStage", "DemoWorldWarpHoleStage", "SandWorldVibrationStage", "LavaWorldClockExStage", "FukuwaraiMarioStage", "HomeShipInsideStage", "ImomuPoisonExStage", "CityWorldMainTowerStage", "SnowWorldRaceTutorialStage", "WorldStage", "SandWorldSlotStage", "RollingExStage", "SnowWorldRace001Stage", "SnowWorldLobby000Stage", "MoonWorldWeddingRoom2Stage", "LavaWorldUpDownExStage", "RevengeForestBossStage", "AnimalChaseExStage", "SeaWorldUtsuboCaveStage", "DemoTakeOffKoopaForMoonStage", "MoonWorldCaptureParadeStage", "LavaWorldCostumeStage", "Lift2DExStage", "Special1WorldTowerBombTailStage", "MoonWorldShopRoom", "SnowWorldCloudBonusExStage", "TogezoRotateExStage", "FrogPoisonExStage", "SkyWorldCloudBonusExStage", "KaronWingTowerStage", "WanwanClashExStage", "WaterTubeExStage", "DemoMeetCapNpcSubStage", "MoonAthleticExStage", "CloudExStage", "DemoHackFirstStage", "PeachWorldPictureBossForestStage", "ShootingElevatorExStage", "PeachWorldCostumeStage", "MeganeLiftExStage", "TrampolineWallCatchExStage", "CityWorldSandSlotStage", "ForestWorldBonusStage", "SwingSteelExStage", "TsukkunRotateExStage", "RocketFlowerExStage", "WindBlowExStage", "ForestWorldWoodsCostumeStage", "ElectricWireExStage", "DemoWorldMoveBackwardArriveStage", "Galaxy2DExStage", "IceWaterDashExStage", "ReflectBombExStage", "LavaWorldUpDownYoshiExStage", "JizoSwitchExStage", "RevengeMofumofuStage", "SnowWorldLobby001Stage", "YoshiCloudExStage", "KillerRoadExStage", "CityPeopleRoadStage", "Note2D3DRoomExStage", "DemoWorldMoveBackwardStage", "KillerRoadNoCapExStage", "DemoWorldMoveForwardStage", "SandWorldMeganeExStage", "LavaWorldExcavationExStage", "Special1WorldTowerCapThrowerStage", "DemoChangeWorldStage", "FogMountainExStage", "SandWorldPyramid000Stage", "SandWorldShopStage", "SandWorldKillerExStage", "PoleKillerExStage", "DemoWorldMoveForwardFirstStage", "StaffRollMoonRockDemo"};
@@ -34,11 +36,11 @@ const char* stageNames[] = {"CapWorldHomeStage", "WaterfallWorldHomeStage", "San
 
 #define TOGGLE(FORMAT, BOOL, LINE) CURSOR(LINE);\
                                    printf(FORMAT, BOOL ? "Enabled" : "Disabled");\
-                                   if (inputEnabled && curLine == LINE && (al::isPadTriggerLeft(CONTROLLER_AUTO) || al::isPadTriggerRight(CONTROLLER_AUTO))) BOOL = !BOOL;
+                                   if (inputEnabled && !nextFrameNoLeftInput && curLine == LINE && (al::isPadTriggerLeft(CONTROLLER_AUTO) || al::isPadTriggerRight(CONTROLLER_AUTO))) BOOL = !BOOL;
 
 #define TRIGGER(NAME, LINE, ACTION) CURSOR(LINE);\
                               printf(NAME);\
-                              if (inputEnabled && curLine == LINE && al::isPadTriggerRight(CONTROLLER_AUTO)) ACTION;
+                              if (inputEnabled && curLine == LINE && al::isPadTriggerRight(CONTROLLER_AUTO)) {ACTION;}
 
 void fl::PracticeUI::savePosition(PlayerActorHakoniwa& player)
 {
@@ -74,17 +76,24 @@ void fl::PracticeUI::update(StageScene& stageScene)
 
     bool holdL = al::isPadHoldL(CONTROLLER_AUTO);
 
-    #if(SMOVER==100)
+    #if SMOVER==100
     fl::TasHolder::instance().update();
     #endif
 
     if (holdL && al::isPadTriggerRight(CONTROLLER_AUTO)) {inputEnabled = !inputEnabled; return;}
     else if
-    //#if(SMOVER==130)
-    //(holdL && al::isPadTriggerLeft(CONTROLLER_AUTO))
-    //#endif
+    #if SMOVER==130
+    (holdL && al::isPadTriggerLeft(CONTROLLER_AUTO))
+    #endif
+    #if SMOVER==100
     (al::isPadTriggerPressLeftStick(CONTROLLER_AUTO))
-    showMenu = !showMenu;
+    #endif
+    {
+        showMenu = !showMenu;
+        #if SMOVER==130
+        nextFrameNoLeftInput = true;
+        #endif
+    }
 
     if (!showMenu)
     {
@@ -103,16 +112,16 @@ void fl::PracticeUI::update(StageScene& stageScene)
     else
         al::showPane(stageScene.stageSceneLayout->shineCounter, "TxtShine");
 
-    #if(SMOVER==130)
+    #if SMOVER==130
     if (showMenu) menu();
     else al::setPaneStringFormat(stageScene.stageSceneLayout->coinCounter, "TxtDebug", " ");
     #endif
 }
 
-#if(SMOVER==100)
+#if SMOVER==100
 void fl::PracticeUI::menu(sead::TextWriter& p)
 #endif
-#if(SMOVER==130)
+#if SMOVER==130
 void fl::PracticeUI::menu()
 #endif
 {
@@ -125,7 +134,7 @@ void fl::PracticeUI::menu()
     {
         enum Page : u8
         {
-            About, Options, Stage, Misc, Info, MoonInfo, Modes, CRC, Debug
+            About, Options, Stage, Misc, Info, Tas, MoonInfo, Modes, Debug
         };
         static Page curPage = About;
         static u8 curLine = 0;
@@ -146,22 +155,22 @@ void fl::PracticeUI::menu()
                 else if (curPage == Options) curPage = Stage;
                 else if (curPage == Stage) curPage = Misc;
                 else if (curPage == Misc) curPage = Info;
-                else if (curPage == Info) curPage = MoonInfo;
+                else if (curPage == Info) curPage = Tas;
+                else if (curPage == Tas) curPage = MoonInfo;
                 else if (curPage == MoonInfo) curPage = Modes;
-                else if (curPage == Modes) curPage = CRC;
-                else if (curPage == CRC) curPage = Debug;
+                else if (curPage == Modes) curPage = Debug;
                 else if (curPage == Debug) curPage = About;
             }
-            if (al::isPadTriggerLeft(CONTROLLER_AUTO))
+            if (al::isPadTriggerLeft(CONTROLLER_AUTO) && !nextFrameNoLeftInput)
             {
                 if (curPage == Options) curPage = About;
                 else if (curPage == Stage) curPage = Options;
                 else if (curPage == Misc) curPage = Stage;
                 else if (curPage == Info) curPage = Misc;
-                else if (curPage == MoonInfo) curPage = Info;
+                else if (curPage == Tas) curPage = Info;
+                else if (curPage == MoonInfo) curPage = Tas;
                 else if (curPage == Modes) curPage = MoonInfo;
-                else if (curPage == CRC) curPage = Modes;
-                else if (curPage == Debug) curPage = CRC;
+                else if (curPage == Debug) curPage = Modes;
                 else if (curPage == About) curPage = Debug;
             }
         }
@@ -175,7 +184,7 @@ void fl::PracticeUI::menu()
                 CHANGE_PAGE();
                 printf("Welcome to the Practice Mod!\n");
                 printf("Made by Fruityloops#8500 and contributors\n");
-                printf("Big thanks to CraftyBoss and bryce_____!\n");
+                printf("Big thanks to CraftyBoss, bryce_____ and Mars2030!\n");
                 break;
             }
             case Options:
@@ -198,15 +207,22 @@ void fl::PracticeUI::menu()
                 static s8 currentScenario = -1;
 
                 printf("Stages\n");
+                #if SMOVER==100
                 MAX_LINE(3);
+                #endif
+                #if SMOVER==130
+                MAX_LINE(0);
+                #endif
                 CURSOR(0);
                 CHANGE_PAGE();
+
+                #if SMOVER==100
                 CURSOR(1);
 
                 if (inputEnabled && curLine == 1)
                 {
                     if (al::isPadTriggerRight(CONTROLLER_AUTO)) currentStage++;
-                    if (al::isPadTriggerLeft(CONTROLLER_AUTO))
+                    if (al::isPadTriggerLeft(CONTROLLER_AUTO) && !nextFrameNoLeftInput)
                     {
                         if (currentStage == 0)
                             currentStage = NUM_STAGES - 1;
@@ -218,7 +234,7 @@ void fl::PracticeUI::menu()
                 {
                     if (al::isPadTriggerRight(CONTROLLER_AUTO))
                         currentScenario = currentScenario == -1 ? 1 : currentScenario + 1;
-                    if (al::isPadTriggerLeft(CONTROLLER_AUTO))
+                    if (al::isPadTriggerLeft(CONTROLLER_AUTO) && !nextFrameNoLeftInput)
                     {
                         if (currentScenario == -1) currentScenario = 15;
                         else currentScenario--;
@@ -238,12 +254,22 @@ void fl::PracticeUI::menu()
                     stageScene->mHolder->changeNextStage(&info, 0);
                     curLine = 0;
                 });
+                #endif
+
+                #if SMOVER==130
+                printf(MSG_NO130);
+                #endif
                 break;
             }
             case Misc:
             {
                 printf("Miscellaneous\n");
+                #if SMOVER==100
+                MAX_LINE(8);
+                #endif
+                #if SMOVER==130
                 MAX_LINE(7);
+                #endif
                 CURSOR(0);
                 CHANGE_PAGE();
 
@@ -252,17 +278,67 @@ void fl::PracticeUI::menu()
                     curLine = 0;
                 });
                 TRIGGER("Damage Mario\n", 2, player->mDamageKeeper->damage(1));
-                TRIGGER("Life Up Heart\n", 3, stageScene->mHolder->mGameDataFile->getPlayerHitPointData()->getMaxUpItem());
-                TRIGGER("Heal Mario\n", 4, stageScene->mHolder->mGameDataFile->getPlayerHitPointData()->recover());
+                TRIGGER("Life Up Heart\n", 3, {
+                    #if SMOVER==100
+                    stageScene->mHolder->mGameDataFile->getPlayerHitPointData()->getMaxUpItem();
+                    #endif
+                    #if SMOVER==130
+                    GameDataFunction::getLifeMaxUpItem(player);
+                    #endif
+                });
+                TRIGGER("Heal Mario\n", 4, {
+                    #if SMOVER==100
+                    stageScene->mHolder->mGameDataFile->getPlayerHitPointData()->recover();
+                    #endif
+                    #if SMOVER==130
+                    GameDataFunction::recoveryPlayer(player);
+                    #endif
+                });
                 TRIGGER("Remove Cappy\n", 5, GameDataFunction::disableCapByPlacement(player->mHackCap));
                 TRIGGER("Invincibility Star\n", 6, player->mDamageKeeper->activatePreventDamage());
-                TRIGGER("Reload Stage\n", 7, {
+                
+                static u8 gravity = 0;
+
+                CURSOR(7);
+
+                const char* gravityString = nullptr;
+
+                if (gravity == 0) gravityString = "Down";
+                else if (gravity == 1) gravityString = "Up";
+                else if (gravity == 2) gravityString = "North";
+                else if (gravity == 3) gravityString = "South";
+                else if (gravity == 4) gravityString = "East";
+                else if (gravity == 5) gravityString = "West";
+                
+                bool gravityChanged = false;
+
+                printf("Gravity: %s\n", gravityString);
+                if (curLine == 7 && inputEnabled && !nextFrameNoLeftInput && al::isPadTriggerLeft(CONTROLLER_AUTO)) {gravity--; gravityChanged = true;}
+                else if (curLine == 7 && inputEnabled && al::isPadTriggerRight(CONTROLLER_AUTO)) {gravity++; gravityChanged = true;}
+                if (gravity == 255) gravity = 5;
+                else if (gravity > 5) gravity = 0;
+
+                if (gravityChanged)
+                {
+                    if (gravity == 0) al::setGravity(player, {0, -1, 0});
+                    else if (gravity == 1) al::setGravity(player, {0, 1, 0});
+                    else if (gravity == 2) al::setGravity(player, {1, 0, 0});
+                    else if (gravity == 3) al::setGravity(player, {-1, 0, 0});
+                    else if (gravity == 4) al::setGravity(player, {0, 0, 1});
+                    else if (gravity == 5) al::setGravity(player, {0, 0, -1});
+                }
+
+                #if SMOVER==100
+                TRIGGER("Reload Stage\n", 8, {
+                    #if(SMOVER==100)
                     reloadStageForPos = 0;
                     reloadStagePos = *al::getTrans(player);
                     reloadStageQuat = *al::getQuat(player);
                     ChangeStageInfo info = ChangeStageInfo(stageScene->mHolder, "start", stageScene->mHolder->getCurrentStageName(), false, CURRENT_SCENARIO, {0});
                     stageScene->mHolder->changeNextStage(&info, 0);
+                    #endif
                 });
+                #endif
 
                 break;
             }
@@ -310,6 +386,56 @@ void fl::PracticeUI::menu()
 
                 break;
             }
+            case Tas:
+            {
+                printf("TAS\n");
+                #if SMOVER==100
+                MAX_LINE(3);
+                #endif
+                #if SMOVER==130
+                MAX_LINE(0);
+                #endif
+                CURSOR(0);
+                CHANGE_PAGE();
+
+                #if SMOVER==130
+                printf(MSG_NO130);
+                #endif
+
+                #if SMOVER==100
+                TRIGGER("Connect to server\n", 1, {
+                    //smo::Server::instance().connect("someip", 7901);
+                });
+                TOGGLE("Old Motion Mod: %s\n", fl::TasHolder::instance().oldMotion, 2);
+
+                fl::TasHolder& h = fl::TasHolder::instance();
+
+                if (h.isRunning)  {TRIGGER("Stop Script\n", 3, h.stop());}
+                else { TRIGGER("Start Script\n", 3, {
+                    if (h.frames) h.start();
+                });
+                }
+
+                printf("\n");
+
+                if (h.scriptName)
+                    printf("Script: %s (%lu frames)\n", h.scriptName, h.frameCount);
+
+                if (h.isRunning)
+                {
+                    printf("TAS Running %lu/%lu\n", h.curFrame, h.frameCount);
+                    sead::Vector2f& left = h.frames[h.curFrame].leftStick;
+                    sead::Vector2f& right = h.frames[h.curFrame].rightStick;
+                    printf("Left Stick: (X: %.5f Y: %.5f)\n", left.x, left.y);
+                    printf("Right Stick: (X: %.5f Y: %.5f)\n", right.x, right.y);
+                    printf("Buttons:\n");
+                    TasFrame& f = h.frames[h.curFrame];
+                    printf("%s %s %s %s %s %s %s %s\n", f.A ? "A" : " ", f.B ? "B" : " ", f.X ? "X" : " ", f.Y ? "Y" : " ", f.L ? "L" : " ", f.R ? "R" : " ", f.ZL ? "ZL" : "  ", f.ZR ? "ZR" : "  ");
+                    printf("%s %s %s %s %s %s %s %s\n", f.plus ? "+" : " ", f.minus ? "-" : " ", f.pressLeftStick ? "LS" : "  ", f.pressRightStick ? "RS" : "  ", f.dUp ? "DUP" : "   ", f.dRight ? "DRIGHT" : "      ", f.dDown ? "DDOWN" : "     ", f.dLeft ? "DLEFT" : "     ");
+                }
+                #endif
+                break;
+            }
             case MoonInfo:
             {
                 printf("Moon Info\n");
@@ -332,40 +458,29 @@ void fl::PracticeUI::menu()
             case Modes:
             {
                 printf("Modes\n");
+                #if SMOVER==100
                 MAX_LINE(6);
+                #endif
+                #if SMOVER==130
+                MAX_LINE(0);
+                #endif
                 CURSOR(0);
                 CHANGE_PAGE();
 
+                #if SMOVER==130
+                printf(MSG_NO130);
+                #endif
+
+                #if SMOVER==100
                 TOGGLE("isModeDiverOrJungleGymRom: %s\n", isModeDiverOrJungleGymRom, 1);
                 TOGGLE("isModeDiverRom: %s\n", isModeDiverRom, 2);
                 TOGGLE("isModeJungleGymRom: %s\n", isModeJungleGymRom, 3);
                 TOGGLE("isModeE3LiveRom: %s\n", isModeE3LiveRom, 4);
                 TOGGLE("isModeE3MovieRom: %s\n", isModeE3MovieRom, 5);
                 TOGGLE("isModeEpdMovieRom: %s\n", isModeEpdMovieRom, 6);
+                #endif
                 break;
             };
-            case CRC:
-            {
-                printf("CRC Setups\n");
-
-                MAX_LINE(4);
-                CURSOR(0);
-                CHANGE_PAGE();
-                
-                f32 capPosX = al::getTrans(player->mHackCap)->x;
-                f32 capPosY = al::getTrans(player->mHackCap)->y;
-                f32 capPosZ = al::getTrans(player->mHackCap)->z;
-                TRIGGER("GP x1\n", 1, al::setTrans(player->mHackCap, sead::Vector3f(capPosX, capPosY -= 2745.0, capPosZ)));
-                TRIGGER("GP x5\n", 2, al::setTrans(player->mHackCap, sead::Vector3f(capPosX, capPosY -= 2745.0 * 5.0, capPosZ)));
-                TRIGGER("GP x10\n", 3, al::setTrans(player->mHackCap, sead::Vector3f(capPosX, capPosY -= 2745.0 * 10.0, capPosZ)));
-                TOGGLE("P2 L/R as shake: %s\n\n", doCRC, 4);
-
-                printf("Sherm Skip S2W (45 gps)\n");
-                printf("Island 1 to 3 S2W (50 gps)\n");
-                printf("Island 3 to 4 S2W (39 gps)\n");
-                printf("Cappy Pos: X: %.3f, Y: %.3f, Z: %.3f\n", capPosX, capPosY, capPosZ);
-                break;
-            }
             case Debug:
             {
                 printf("Debug\n");
@@ -378,9 +493,9 @@ void fl::PracticeUI::menu()
                 printf("Current World ID: %d\n", GameDataFunction::getCurrentWorldId(*stageScene->mHolder));
                 printf("Current Stage Name: %s\n", GameDataFunction::getCurrentStageName(*stageScene->mHolder));
                 printf("Language: %s\n", stageScene->mHolder->getLanguage());
+                #endif
                 printf("\n");
                 printf("Practice Mod Version: %s\n", PRACTICE_VERSTR);
-                #endif
                 break;
             }
             default:
@@ -393,5 +508,6 @@ void fl::PracticeUI::menu()
     #if(SMOVER==130)
     al::showPane(stageScene->stageSceneLayout->coinCounter, "TxtDebug");
     al::setPaneStringFormat(stageScene->stageSceneLayout->coinCounter, "TxtDebug", textBuffer);
+    nextFrameNoLeftInput = false;
     #endif
 }
