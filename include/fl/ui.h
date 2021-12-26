@@ -25,6 +25,9 @@ private:
     bool hideShineCounter = false;
     bool nextFrameNoLeftInput = false;
 
+    s32 mode = 0;
+    const char* modeStr = nullptr;
+
     #if(SMOVER==130)
     char textBuffer[4096];
     u32 printPos;
@@ -48,6 +51,8 @@ public:
     bool gotShineRefresh = false;
     bool alwaysWarp = false;
     bool disableAutoSave = false;
+    bool doCRC = false;
+    bool CRCMode = false;
 
     bool isModeDiverOrJungleGymRom = false;
     bool isModeDiverRom = false;

@@ -2,6 +2,9 @@
 
 #include "sead/math/seadVector.h"
 
+class StageScene;
+
+void inputShake(al::JoyPadAccelPoseAnalyzer *capMotion);
 sead::Vector2f* fgetLeftStick(int port);
 sead::Vector2f* fgetRightStick(int port);
 

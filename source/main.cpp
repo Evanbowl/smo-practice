@@ -10,6 +10,9 @@
 #include <nn/init.h>
 #include <mem.h>
 
+
+    s32 mElapsed = 0;
+
 void stageSceneControlHook() {
     __asm ("MOV X19, X0");
 
@@ -17,6 +20,24 @@ void stageSceneControlHook() {
     __asm ("MOV %[result], X0" : [result] "=r" (stageScene));
     
     fl::PracticeUI::instance().update(*stageScene);
+    al::JoyPadAccelPoseAnalyzer *capMotion = al::tryGetPlayerActor(al::getScenePlayerHolder(stageScene), 0)->mHackCap->mPlayerInput->mJoyPadAccelPoseAnalyzer2;
+
+    fl::PracticeUI& ui = fl::PracticeUI::instance();
+
+    if (!ui.CRCMode) {
+        if (ui.doCRC && mElapsed < 1 && al::isPadTriggerL(2) || al::isPadHoldR(2)) { //Timed (false)
+        mElapsed++;
+
+        if (mElapsed == 100) {
+            inputShake(capMotion);
+        }
+        }
+    }
+    else {
+        if (ui.doCRC && al::isPadHoldL(2) || al::isPadHoldR(2)) //S2W (true)
+        inputShake(capMotion);
+
+    }
 
     __asm ("MOV X0, %[input]" : [input] "=r" (stageScene));
 }

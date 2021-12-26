@@ -2,6 +2,7 @@
 #include <al/util.hpp>
 #include <fl/tas.h>
 #include <fl/input.h>
+#include "al/input/JoyPadAccelPoseAnalyzer.h"
 
 #if(SMOVER==100)
 
@@ -25,6 +26,23 @@
                                    if (h.curFrame <= 1) return false;\
                                    return h.frames[h.curFrame - 1].PNAME && !h.frames[h.curFrame].PNAME;\
                                } else return al::isPadRelease##BUTTON(port);}
+
+
+void inputShake(al::JoyPadAccelPoseAnalyzer *capMotion) {
+
+    capMotion->mSwingLeft = true;
+    capMotion->mSwingRight = true;
+    capMotion->mSwingAny = true;
+    capMotion->mAccelCombinedVel = {0.0f, 1.0f};
+    capMotion->mAccelLeftAccel = {0.0f, 1.0f};
+    capMotion->mAccelRightAccel = {0.0f, 1.0f};
+    capMotion->mAccelLeftVel = {0.0f, 1.0f};
+    capMotion->mAccelRightVel = {0.0f, 1.0f};
+    capMotion->mHistoryLeft.hist0 = 1.4f;
+    capMotion->mHistoryRight.hist0 = 1.4f;
+    capMotion->mHistoryLeft.hist1 = 0.5f;
+    capMotion->mHistoryRight.hist1 = 0.5f;
+}
 
 sead::Vector2f* fgetLeftStick(int port)
 {
@@ -87,5 +105,4 @@ PADRELEASE(Up, dUp);
 PADRELEASE(Right, dRight);
 PADRELEASE(Down, dDown);
 PADRELEASE(Left, dLeft);
-
 #endif
